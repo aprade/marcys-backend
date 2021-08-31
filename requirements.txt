@@ -1,7 +1,0 @@
-fastapi
-uvicorn
-ipaddress
-
-# dev
-pytest
-requests
