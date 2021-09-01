@@ -9,7 +9,7 @@ interface Machine {
 const addMachine = async (req: Request<string, Machine>, res: Response): Promise<Response> => {
 	if (!await validator.ipValidator(req.body.ip)){
 		return res.status(406).json({
-			message: 'Invalid IP',
+			message: "The provided IP address is invalid.",
 			status_code: 406,
 			machine: req.body,
 		});
