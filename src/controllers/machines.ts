@@ -14,11 +14,13 @@ const addMachine = async (req: Request<string, Machine>, res: Response): Promise
 			machine: req.body,
 		});
 	}
-	return res.status(200).json({
-		message: req.body
-	});
-}	
 
+	return res.status(200).json({
+		message: "Successfuly added the machine.",
+		status_code: 200,
+		machine: req.body,
+	});
+}
 
 const getMachines = async (req: Request, res: Response): Promise<Response> => {
 	return res.status(200).json({
