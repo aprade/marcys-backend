@@ -21,7 +21,7 @@ describe("POST /machines - create new machine endpoint", () => {
 			.send(payload);
 
 		expect(result.body).toEqual({
-			message: 'Invalid IP',
+			message: "The provided IP address is invalid.",
 			status_code: 406,
 			machine: payload,
 		});
