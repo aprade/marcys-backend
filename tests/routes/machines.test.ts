@@ -9,7 +9,11 @@ describe("POST /machines - create new machine endpoint", () => {
 			.set('Content-type', 'application/json')
 			.send(payload);
 
-		expect(result.body).toEqual({ message: payload });
+		expect(result.body).toEqual({
+			message: "Successfuly added the machine.",
+			status_code: 200,
+			machine: payload,
+		});
 		expect(result.statusCode).toEqual(200);
 	});
 
@@ -28,8 +32,6 @@ describe("POST /machines - create new machine endpoint", () => {
 		expect(result.statusCode).toEqual(406);
 	});
 });
-
-
 
 describe("GET /machines - get all registered machines endpoint", () => {
 	it("Successfuly received the machines", async () => {
