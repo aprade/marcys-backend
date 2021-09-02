@@ -8,23 +8,6 @@ import * as api from '../../src/modules/api';
 const checkMachineMock = api.checkMachine as jest.Mock<Promise<api.CheckMachine>>; 
 
 describe("POST /machines - create new machine endpoint", () => {
-	it("Successfuly create a new application", async () => {
-		checkMachineMock.mockResolvedValue(true);
-
-		const payload = {'ip': '0.0.0.0', 'nickname': 'localhost'};
-		const result = await supertest(app)
-			.post("/machines")
-			.set('Content-type', 'application/json')
-			.send(payload);
-
-		expect(result.body).toEqual({
-			message: "Successfuly added the machine.",
-			status_code: 200,
-			machine: payload,
-		});
-		expect(result.statusCode).toEqual(200);
-	});
-
 	it("Failed while validating IP", async () => {
 		const payload = {'ip': '222.666.111.44', 'nickname': 'localhost'};
 		const result = await supertest(app)
@@ -55,6 +38,23 @@ describe("POST /machines - create new machine endpoint", () => {
 			machine: payload,
 		});
 		expect(result.statusCode).toEqual(404);
+	});
+
+	it("Successfuly create a new application", async () => {
+		checkMachineMock.mockResolvedValue(true);
+
+		const payload = {'ip': '0.0.0.0', 'nickname': 'localhost'};
+		const result = await supertest(app)
+			.post("/machines")
+			.set('Content-type', 'application/json')
+			.send(payload);
+
+		expect(result.body).toEqual({
+			message: "Successfuly added the machine.",
+			status_code: 200,
+			machine: payload,
+		});
+		expect(result.statusCode).toEqual(200);
 	});
 });
 
