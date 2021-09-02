@@ -20,7 +20,7 @@ const request = (endpoint: string, init?: Init, params?: Params): Request => {
 		endpoint = `${endpoint}?${qs.stringify(init.query)}`;
 	}
 
-	return new Request(`http://localhost:8069/${endpoint}`, {
+	return new Request(`http://localhost:8000/${endpoint}`, {
 		headers: {
 			"Content-Type":  "application/json",
 		},
