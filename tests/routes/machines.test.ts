@@ -1,5 +1,6 @@
 jest.mock('../../src/modules/api');
 
+import 'jest-extended';
 import app from '../../src/app';
 import supertest from 'supertest';
 
@@ -57,6 +58,19 @@ describe("POST /machines - create new machine", () => {
 			machine: payload,
 			status: "SUCCESS",
 		});
+		expect(result.statusCode).toEqual(200);
+	});
+});
+
+describe("GET /machines - retrieve all machine", () => {
+	it("Successfuly retrived machines", async () => {
+		const result = await supertest(app)
+			.get("/machines")
+			.set('Content-type', 'application/json')
+
+		expect(result.body.message).toEqual("Found all machines register on Database");
+		expect(result.body.machines).toIncludeAnyMembers(["my-computer","localhost"]);
+		expect(result.body.status_code).toEqual(200);
 		expect(result.statusCode).toEqual(200);
 	});
 });
