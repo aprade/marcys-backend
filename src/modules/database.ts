@@ -21,8 +21,19 @@ export enum GetMachineMessage {
 }
 
 export interface GetMachineResponse {
-	message: GetMachineMessage,
+	message: GetMachineMessage;
 	machine: Machine | null;
+}
+
+export enum GetMachinesMessage {
+	FOUND = "Found all machines register on Database",
+	NOT_FOUND = "Did not found any register on Database",
+	UNKNOW_ERROR = "Unkown error when trying to get it from the Database",
+}
+
+export interface GetMachinesResponse {
+	message: GetMachinesMessage;
+	machines: Array<Machine["nickname"]>;
 }
 
 const setMachines = async (machine: Machine["nickname"]) : Promise<any> => {
@@ -82,3 +93,30 @@ export const getMachine = async (key: Machine["nickname"]): Promise<GetMachineRe
 
 	return response;
 }
+
+export const getMachines = async (): Promise<GetMachinesResponse> => {
+	let response: GetMachinesResponse = { message: GetMachinesMessage.FOUND, machines: [] };
+
+	const redis = createClient();
+	redis.on('error', err => console.log('Redis Client Error', err));
+	await redis.connect();
+
+	try {
+		const value = await redis.get('machines');
+
+		if (value) {
+			response.machines = JSON.parse(value);
+		} else {
+			response.message = GetMachinesMessage.NOT_FOUND;
+		}
+	} catch (err) {
+		console.log('Redis Client Error on get:', err);
+		response.message = GetMachinesMessage.UNKNOW_ERROR;
+	}
+	await redis.quit();
+
+	return response;
+}
+
+
+
