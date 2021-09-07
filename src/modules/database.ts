@@ -1,4 +1,4 @@
-import ioredis from 'ioredis';
+import { createClient } from 'redis';
 
 export interface Machine {
 	ip: string;
@@ -17,7 +17,7 @@ export enum SetMachineMessage {
 export enum GetMachineMessage {
 	FOUND = "Found one machine register on Database",
 	NOT_FOUND = "Did not found any register on Database",
-	UNKNOW_ERROR = "Unkown error when trying to add into the Database",
+	UNKNOW_ERROR = "Unkown error when trying to get it from the Database",
 }
 
 export interface GetMachineResponse {
@@ -25,31 +25,60 @@ export interface GetMachineResponse {
 	machine: Machine | null;
 }
 
+const setMachines = async (machine: Machine["nickname"]) : Promise<any> => {
+	const redis = createClient();
+	redis.on('error', err => console.log('Redis Client Error', err));
+	await redis.connect();
+
+	try {
+		const machines: Array<Machine["nickname"]> = JSON.parse(await redis.get('machines') || "[]");
+
+		if (!machines.includes(machine)) await redis.set('machines', JSON.stringify( [ ...machines, machine ] ));
+	} catch (err) {
+		throw new Error('add new machine to list.' + err);
+	}
+	await redis.quit();
+}
+
 export const setMachine = async (machine: Machine): Promise<SetMachineMessage> => {
-	const redis = new ioredis();
 	let response: SetMachineMessage = SetMachineMessage.ADDED;
 
-	redis.set(machine.nickname, JSON.stringify(machine))
-	.catch(_ => response = SetMachineMessage.FAILED);
+	const redis = createClient();
+	redis.on('error', err => console.log('Redis Client Error', err));
+	await redis.connect();
+
+	try {
+		await redis.set(machine.nickname, JSON.stringify(machine));
+		await setMachines(machine.nickname);
+	} catch (err) {
+		console.log('Redis Client Error on set:', err);
+		response = SetMachineMessage.FAILED;
+	}
+	await redis.quit();
 
 	return response;
 }
 
-export const getMachine = async (machineNickname: Machine["nickname"]): Promise<GetMachineResponse> => {
-	const redis = new ioredis();
+export const getMachine = async (key: Machine["nickname"]): Promise<GetMachineResponse> => {
 	let response: GetMachineResponse = { message: GetMachineMessage.FOUND, machine: null };
 
-	try {
-		let result = await redis.get(machineNickname);
+	const redis = createClient();
+	redis.on('error', err => console.log('Redis Client Error', err));
+	await redis.connect();
 
-		if (result) {
-			response.machine = JSON.parse(result);
+	try {
+		const value = await redis.get(key);
+
+		if (value) {
+			response.machine = JSON.parse(value);
 		} else {
 			response.message = GetMachineMessage.NOT_FOUND;
 		}
-	} catch (error) {
+	} catch (err) {
+		console.log('Redis Client Error on get:', err);
 		response.message = GetMachineMessage.UNKNOW_ERROR;
 	}
+	await redis.quit();
 
 	return response;
 }
