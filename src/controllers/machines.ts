@@ -55,10 +55,32 @@ const addMachine = async (req: Request<string, database.Machine>, res: Response)
 	}
 }
 
-const getMachines = async (req: Request, res: Response): Promise<Response> => {
-	return res.status(200).json({
-		message: req.body
-	});
+const getMachines = async (req: Request<string, database.Machine["nickname"]>, res: Response): Promise<Response> => {
+	let databaseResult = await database.getMachine(req.body.nickname);
+
+	switch (databaseResult.message) {
+		case database.GetMachineMessage.FOUND:
+			return res.status(200).json({
+				...databaseResult,
+				status_code: 200,
+			});
+		case database.GetMachineMessage.NOT_FOUND:
+			return res.status(404).json({
+				...databaseResult,
+				status_code: 404, 
+			});
+		case database.GetMachineMessage.UNKNOW_ERROR:
+			return res.status(500).json({
+				...databaseResult,
+				status_code: 500,
+			});
+		default:
+			return res.status(500).json({
+				message: "Unkown error type",
+				machine: null,
+				status_code: 500,
+			});
+	}
 }
 
 export default {

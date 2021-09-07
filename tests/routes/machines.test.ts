@@ -3,7 +3,6 @@ jest.mock('../../src/modules/api');
 import app from '../../src/app';
 import supertest from 'supertest';
 
-import IoRedisMock from 'ioredis-mock';
 import * as api from '../../src/modules/api';
 
 const checkMachineMock = api.checkMachine as jest.Mock<Promise<api.CheckMachine>>;
@@ -45,7 +44,6 @@ describe("POST /machines - create new machine", () => {
 
 	it("Successfuly create a new application", async () => {
 		checkMachineMock.mockResolvedValue(true);
-		new IoRedisMock();
 
 		const payload = {'ip': '0.0.0.0', 'nickname': 'localhost'};
 		const result = await supertest(app)
@@ -62,12 +60,3 @@ describe("POST /machines - create new machine", () => {
 		expect(result.statusCode).toEqual(200);
 	});
 });
-
-// describe("GET /machines - get all registered machines endpoint", () => {
-// 	it("Successfuly received the machines", async () => {
-// 		const result = await supertest(app).get("/machines");
-
-// 		expect(result.body).toEqual({ message: {} });
-// 		expect(result.statusCode).toEqual(200);
-// 	});
-// });
