@@ -12,23 +12,25 @@ interface MachineResponse {
 }
 
 const addMachine = async (req: Request<string, database.Machine>, res: Response): Promise<Response<MachineResponse>> => {
-	if (!await validator.ipValidator(req.body.ip))
+	if (!await validator.ipValidator(req.body.ip)) {
 		return res.status(406).json({
 			message: "The provided IP address is invalid.",
 			status_code: 406,
 			machine: req.body,
 			status: "FAILED",
 		});
+	}
 
-	if (!await api.checkMachine())
+	if (!await api.checkMachine()) {
 		return res.status(404).json({
 			message: "Could not connect to the specified IP. Verify if it can be reached by the outside world",
 			status_code: 404,
 			machine: req.body,
 			status: "FAILED",
 		});
+	}
 
-	let databaseResult = await database.setMachine(req.body);
+	const databaseResult = await database.setMachine(req.body);
 
 	switch (databaseResult) {
 		case database.SetMachineMessage.ADDED:
@@ -56,7 +58,7 @@ const addMachine = async (req: Request<string, database.Machine>, res: Response)
 }
 
 const getMachines = async (req: Request, res: Response): Promise<Response> => {
-	let databaseResult = await database.getMachines();
+	const databaseResult = await database.getMachines();
 
 	switch (databaseResult.message) {
 		case database.GetMachinesMessage.FOUND:
@@ -83,7 +85,36 @@ const getMachines = async (req: Request, res: Response): Promise<Response> => {
 	}
 }
 
+const getMachine = async (req: Request, res: Response): Promise<Response> => {
+	const databaseResult = await database.getMachine(req.params.nickname);
+
+	switch (databaseResult.message) {
+		case database.GetMachineMessage.FOUND:
+			return res.status(200).json({
+				...databaseResult,
+				status_code: 200,
+			});
+		case database.GetMachineMessage.NOT_FOUND:
+			return res.status(404).json({
+				...databaseResult,
+				status_code: 404,
+			});
+		case database.GetMachineMessage.UNKNOW_ERROR:
+			return res.status(500).json({
+				...databaseResult,
+				status_code: 500,
+			});
+		default:
+			return res.status(500).json({
+				message: "Unkown error type",
+				machine: null,
+				status_code: 500,
+			})
+	}
+}
+
 export default {
 	addMachine,
 	getMachines,
+	getMachine,
 };
