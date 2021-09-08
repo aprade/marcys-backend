@@ -94,10 +94,7 @@ const getMachine = async (req: Request, res: Response): Promise<Response> => {
 
   switch (databaseResult.message) {
     case database.GetMachineMessage.FOUND:
-      return res.status(200).json({
-        ...databaseResult,
-        status_code: 200
-      });
+      break;
     case database.GetMachineMessage.NOT_FOUND:
       return res.status(404).json({
         ...databaseResult,
@@ -115,6 +112,36 @@ const getMachine = async (req: Request, res: Response): Promise<Response> => {
         status_code: 500
       });
   }
+
+  if (!(await api.checkMachine())) {
+    return res.status(404).json({
+      message:
+        'Could not connect to the specified IP. Verify if it can be reached by the outside world',
+      status_code: 404,
+      machine: req.body,
+      status: 'FAILED'
+    });
+  }
+
+  const machineHistory = await database.getMachineHistory(req.params.nickname);
+
+  const machineCPUInfo = await api.getMachineCPUInfo();
+  const machineMemoryInfo = await api.getMachineMemoryInfo();
+
+  await database.setMachineHistory(
+    req.params.nickname,
+    machineCPUInfo,
+    machineMemoryInfo
+  );
+
+  return res.status(200).json({
+    machineHistory,
+    machineState: {
+      cpu: { ...machineCPUInfo },
+      memory: { ...machineMemoryInfo }
+    },
+    status_code: 200
+  });
 };
 
 export default {

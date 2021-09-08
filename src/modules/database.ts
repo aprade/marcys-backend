@@ -1,4 +1,5 @@
 import { createClient } from 'redis';
+import type { MachineCPUInfo, MachineMemoryInfo } from './api';
 
 export interface Machine {
   ip: string;
@@ -34,6 +35,19 @@ export enum GetMachinesMessage {
 export interface GetMachinesResponse {
   message: GetMachinesMessage;
   machines: Array<Machine['nickname']>;
+}
+
+interface MachineCPUHistory extends MachineCPUInfo {
+  timestamp: Date;
+}
+
+interface MachineMemoryHistory extends MachineMemoryInfo {
+  timestamp: Date;
+}
+
+export interface MachineHistory {
+  cpu: Array<MachineCPUHistory>;
+  memory: Array<MachineMemoryHistory>;
 }
 
 const setMachines = async (machine: Machine['nickname']): Promise<void> => {
@@ -130,4 +144,47 @@ export const getMachines = async (): Promise<GetMachinesResponse> => {
   await redis.quit();
 
   return response;
+};
+
+export const setMachineHistory = async (
+  nickname: string,
+  cpuState: MachineCPUInfo,
+  memoryState: MachineMemoryInfo
+): Promise<void> => {
+  const redis = createClient();
+  redis.on('error', err => console.log('Redis Client Error', err));
+  await redis.connect();
+
+  try {
+    const currentHistory: MachineHistory = JSON.parse(
+      (await redis.get(`${nickname}History`)) || '{"cpu": [], "memory": []}'
+    );
+
+    const timestamp = new Date();
+    const newHistory: MachineHistory = {
+      cpu: [...currentHistory.cpu, { ...cpuState, timestamp }],
+      memory: [...currentHistory.memory, { ...memoryState, timestamp }]
+    };
+
+    await redis.set(`${nickname}History`, JSON.stringify(newHistory));
+  } catch (err: unknown) {
+    throw new Error(
+      `add current state to machine (${nickname}) history. ${err}`
+    );
+  }
+  await redis.quit();
+};
+
+export const getMachineHistory = async (
+  nickname: string
+): Promise<MachineHistory> => {
+  const redis = createClient();
+  redis.on('error', err => console.log('Redis Client Error', err));
+  await redis.connect();
+
+  const history = JSON.parse(await redis.get(`${nickname}History`)) || { cpu: {}, memory: {} };
+
+  await redis.quit();
+
+  return history;
 };
