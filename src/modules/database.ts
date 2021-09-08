@@ -36,7 +36,7 @@ export interface GetMachinesResponse {
 	machines: Array<Machine["nickname"]>;
 }
 
-const setMachines = async (machine: Machine["nickname"]) : Promise<any> => {
+const setMachines = async (machine: Machine["nickname"]): Promise<void> => {
 	const redis = createClient();
 	redis.on('error', err => console.log('Redis Client Error', err));
 	await redis.connect();
@@ -44,9 +44,9 @@ const setMachines = async (machine: Machine["nickname"]) : Promise<any> => {
 	try {
 		const machines: Array<Machine["nickname"]> = JSON.parse(await redis.get('machines') || "[]");
 
-		if (!machines.includes(machine)) await redis.set('machines', JSON.stringify( [ ...machines, machine ] ));
-	} catch (err) {
-		throw new Error('add new machine to list.' + err);
+		if (!machines.includes(machine)) {await redis.set('machines', JSON.stringify( [ ...machines, machine ] ));}
+	} catch (err: unknown) {
+		throw new Error(`add new machine to list.${  err}`);
 	}
 	await redis.quit();
 }
@@ -61,7 +61,7 @@ export const setMachine = async (machine: Machine): Promise<SetMachineMessage> =
 	try {
 		await redis.set(machine.nickname, JSON.stringify(machine));
 		await setMachines(machine.nickname);
-	} catch (err) {
+	} catch (err: unknown) {
 		console.log('Redis Client Error on set:', err);
 		response = SetMachineMessage.FAILED;
 	}
@@ -71,7 +71,7 @@ export const setMachine = async (machine: Machine): Promise<SetMachineMessage> =
 }
 
 export const getMachine = async (key: Machine["nickname"]): Promise<GetMachineResponse> => {
-	let response: GetMachineResponse = { message: GetMachineMessage.FOUND, machine: null };
+	const response: GetMachineResponse = { message: GetMachineMessage.FOUND, machine: null };
 
 	const redis = createClient();
 	redis.on('error', err => console.log('Redis Client Error', err));
@@ -85,7 +85,7 @@ export const getMachine = async (key: Machine["nickname"]): Promise<GetMachineRe
 		} else {
 			response.message = GetMachineMessage.NOT_FOUND;
 		}
-	} catch (err) {
+	} catch (err: unknown) {
 		console.log('Redis Client Error on get:', err);
 		response.message = GetMachineMessage.UNKNOW_ERROR;
 	}
@@ -95,7 +95,7 @@ export const getMachine = async (key: Machine["nickname"]): Promise<GetMachineRe
 }
 
 export const getMachines = async (): Promise<GetMachinesResponse> => {
-	let response: GetMachinesResponse = { message: GetMachinesMessage.FOUND, machines: [] };
+	const response: GetMachinesResponse = { message: GetMachinesMessage.FOUND, machines: [] };
 
 	const redis = createClient();
 	redis.on('error', err => console.log('Redis Client Error', err));
@@ -109,7 +109,7 @@ export const getMachines = async (): Promise<GetMachinesResponse> => {
 		} else {
 			response.message = GetMachinesMessage.NOT_FOUND;
 		}
-	} catch (err) {
+	} catch (err: unknown) {
 		console.log('Redis Client Error on get:', err);
 		response.message = GetMachinesMessage.UNKNOW_ERROR;
 	}
