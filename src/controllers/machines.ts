@@ -15,7 +15,7 @@ const addMachine = async (
   req: Request<string, database.Machine>,
   res: Response
 ): Promise<Response<MachineResponse>> => {
-  if (!(await validator.ipValidator(req.body.ip))) {
+  if (!validator.ipValidator(req.body.ip)) {
     return res.status(406).json({
       message: 'The provided IP address is invalid.',
       status_code: 406,
