@@ -182,7 +182,15 @@ export const getMachineHistory = async (
   redis.on('error', err => console.log('Redis Client Error', err));
   await redis.connect();
 
-  const history = JSON.parse(await redis.get(`${nickname}History`)) || { cpu: {}, memory: {} };
+  const databaseContent = JSON.parse(await redis.get(`${nickname}History`)) || {
+    cpu: [],
+    memory: []
+  };
+
+  const history = {
+    cpu: databaseContent.cpu.slice(-10),
+    memory: databaseContent.memory.slice(-10)
+  };
 
   await redis.quit();
 
