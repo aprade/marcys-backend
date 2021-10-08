@@ -1,10 +1,10 @@
 import express from 'express';
-import controller from '../controllers/machines';
+import * as controller from '../controllers/machines';
 
 const router = express.Router();
 
-router.post('/machines', controller.addMachine);
-router.get('/machines', controller.getMachines);
-router.get('/machines/:nickname', controller.getMachine);
+router.post('/machines', controller.create);
+router.get('/machines', controller.retrieveAll);
+router.get('/machines/:nickname', controller.retrieveOne);
 
 export default router;
