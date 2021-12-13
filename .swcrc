@@ -1,0 +1,29 @@
+{
+  "jsc": {
+    "parser": {
+      "syntax": "typescript",
+      "decorators": true,
+      "dynamicImport": true
+    },
+    "transform": {
+      "legacyDecorator": true,
+      "decoratorMetadata": true
+    },
+    "target": "es2020",
+    "keepClassNames": true,
+    "loose": true
+  },
+  "module": {
+    "type": "es6",
+    "strict": true,
+    "strictMode": true,
+    "lazy": false,
+    "noInterop": true
+  },
+  "env": {
+    "targets": {
+      "node": 17
+    }
+  },
+  "sourceMaps": "inline"
+}

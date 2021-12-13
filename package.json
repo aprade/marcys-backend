@@ -1,0 +1,32 @@
+{
+  "name": "marcys-link",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:aprade/marcys-link.git",
+  "author": "Joao Koritar <jakoritarleite@gmail.com>",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "yarn run-s _build:typecheck _build:transpile",
+    "dev": "nodemon --ext ts --exec \"yarn run-s build _server:prd\"",
+    "start": "yarn run-s build _server:prd",
+    "_server:dev": "cross-env NODE_ENV=development node --inspect dist/index.js",
+    "_server:prd": "cross-env NODE_ENV=production node dist/index.js",
+    "_build:typecheck": "tsc --pretty --skipLibCheck --noEmit",
+    "_build:transpile": "swc src -d dist --sync"
+  },
+  "devDependencies": {
+    "@swc/cli": "^0.1.54",
+    "@swc/core": "^1.2.120",
+    "@types/express": "^4.17.13",
+    "@types/node": "^16.11.12",
+    "nodemon": "^2.0.15",
+    "typescript": "^4.5.3"
+  },
+  "dependencies": {
+    "concurrently": "^6.4.0",
+    "cross-env": "^7.0.3",
+    "express": "^4.17.1",
+    "npm-run-all": "^4.1.5"
+  }
+}
